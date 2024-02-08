@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './style.css';
 import styles from './Calendar.module.scss';
+import moment from 'moment';
 
 export default function App() {
   return (
@@ -14,6 +15,52 @@ export default function App() {
 const Calendar = () => {
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
+
+  const [dateContext, setDateContext] = useState(moment());
+  const today = moment();
+
+  const firstDayOfMonth = moment(dateContext).startOf('month');
+  const lastDayOfMonth = moment(dateContext).endOf('month');
+  const daysInMonth = moment(dateContext).daysInMonth();
+
+  let lastMonthDays = [];
+  console.log(Number(firstDayOfMonth.format('d')) - 1)
+  for (let i = 1; i < Number(firstDayOfMonth.format('d')); i++) {
+    // console.log(i < (Number(firstDayOfMonth.format('d')) - 1))
+    console.log(i, Number(firstDayOfMonth.format('d')) )
+    const lastMonthDay = firstDayOfMonth.clone().subtract(i, 'day').date();
+    lastMonthDays.push(
+      <div className={`${styles['date-cell']} ${styles.blank}`} key={`blank-${i}`}>
+        {lastMonthDay}
+      </div>
+    );
+  }
+  lastMonthDays = lastMonthDays.reverse();
+
+  // Generate date cells for the days of the month
+  const days = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    let day = d.toString();
+    let todayClass = today.isSame(moment(dateContext).date(d), "day") ? styles.today : "";
+    days.push(
+      <div className={`${styles['date-cell']} ${todayClass} ${styles["current-month"]}`} key={d}>
+        {day}
+      </div>
+    );
+  }
+
+  const NextMonthDays = [];
+  for (let i = 1; i + Number(lastDayOfMonth.format('d')) <= 7; i++) {
+    const nextMonthDay = lastDayOfMonth.clone().add(i, 'day').date();
+    NextMonthDays.push(
+      <div className={`${styles['date-cell']} ${styles.blank}`} key={`blank-${i}`}>
+        {nextMonthDay}
+      </div>
+    );
+  }
+
+  // Combine blanks and days to create the full grid
+  const totalSlots = [...lastMonthDays, ...days, ...NextMonthDays];
 
   const months = Array.from({ length: 12 }, (_, index) => {
     return new Date(0, index).toLocaleString('default', { month: 'short' });
@@ -63,13 +110,7 @@ const Calendar = () => {
         <div>Su</div>
       </div>
       <div className={styles['dates-grid']}>
-        {/* You will dynamically generate date cells here */}
-        {/* Placeholder for dates */}
-        {Array.from({ length: 35 }, (_, i) => (
-          <div className={`${styles['date-cell']}`} key={i}>
-            {i + 1}
-          </div>
-        ))}
+        {totalSlots}
       </div>
       <div className={styles.footer}>
         <button className={`${styles.button} ${styles.today}`}>Today</button>
