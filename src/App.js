@@ -7,17 +7,18 @@ export default function App() {
   return (
     <div>
       <h1>Date picker!</h1>
-      <Calendar />
+      <Calendar date={new Date()} />
     </div>
   );
 }
 
-const Calendar = () => {
-  const [month, setMonth] = useState(new Date().getMonth());
-  const [year, setYear] = useState(new Date().getFullYear());
+const Calendar = ({ date }) => {
   const [selectedDate, setSelectedDate] = useState(null); // New state for the selected date
 
-  const [dateContext, setDateContext] = useState(moment());
+  const [dateContext, setDateContext] = useState(moment(date));
+  const month = dateContext.month();
+  const year = dateContext.year();
+
   const today = moment();
 
   const firstDayOfMonth = moment(dateContext).startOf("month");
@@ -29,7 +30,14 @@ const Calendar = () => {
   };
 
   let lastMonthDays = [];
-  for (let i = 1; i < Number(firstDayOfMonth.format("d")); i++) {
+  for (
+    let i = 1;
+    i <
+    (Number(firstDayOfMonth.format("d")) == 0
+      ? 7
+      : Number(firstDayOfMonth.format("d")));
+    i++
+  ) {
     const lastMonthDay = firstDayOfMonth.clone().subtract(i, "day").date();
     lastMonthDays.push(
       <div className={`${styles["date-cell"]}`} key={`last-month-${i}`}>
@@ -60,7 +68,17 @@ const Calendar = () => {
   }
 
   const NextMonthDays = [];
-  for (let i = 1; i + Number(lastDayOfMonth.format("d")) <= 7; i++) {
+  for (
+    let i = 1;
+    i + Number(lastDayOfMonth.format("d")) <= 7 &&
+    Number(lastDayOfMonth.format("d")) > 0;
+    i++
+  ) {
+    console.log(
+      "hey",
+      i + Number(lastDayOfMonth.format("d")),
+      Number(lastDayOfMonth.format("d"))
+    );
     const nextMonthDay = lastDayOfMonth.clone().add(i, "day").date();
     NextMonthDays.push(
       <div className={`${styles["date-cell"]}`} key={`next-month-${i}`}>
@@ -85,7 +103,10 @@ const Calendar = () => {
           <select
             className={styles.month}
             value={month}
-            onChange={(e) => setMonth(e.target.value)}
+            onChange={(e) => {
+              const newMonth = parseInt(e.target.value, 10);
+              setDateContext(moment(dateContext).month(newMonth));
+            }}
           >
             {months.map((monthName, index) => (
               <option key={monthName} value={index}>
@@ -96,7 +117,10 @@ const Calendar = () => {
           <select
             className={styles.year}
             value={year}
-            onChange={(e) => setYear(e.target.value)}
+            onChange={(e) => {
+              const newYear = parseInt(e.target.value, 10);
+              setDateContext(moment(dateContext).year(newYear));
+            }}
           >
             {years.map((yearNumber) => (
               <option key={yearNumber} value={yearNumber}>
@@ -106,8 +130,22 @@ const Calendar = () => {
           </select>
         </div>
         <div className={styles["nav-button"]}>
-          <button className={styles.arrow}>{"<"}</button>
-          <button className={styles.arrow}>{">"}</button>
+          <button
+            className={styles.arrow}
+            onClick={() => {
+              setDateContext(dateContext.clone().subtract(1, "month"));
+            }}
+          >
+            {"<"}
+          </button>
+          <button
+            className={styles.arrow}
+            onClick={() => {
+              setDateContext(dateContext.clone().add(1, "month"));
+            }}
+          >
+            {">"}
+          </button>
         </div>
       </div>
       <div className={styles.weekdays}>
@@ -121,8 +159,24 @@ const Calendar = () => {
       </div>
       <div className={styles["dates-grid"]}>{totalSlots}</div>
       <div className={styles.footer}>
-        <button className={`${styles.button} ${styles.today}`}>Today</button>
-        <button className={`${styles.button} ${styles.tomorrow}`}>
+        <button
+          className={`${styles.button} ${styles.today}`}
+          onClick={() => {
+            const today = moment();
+            setDateContext(today);
+            setSelectedDate(today);
+          }}
+        >
+          Today
+        </button>
+        <button
+          className={`${styles.button} ${styles.tomorrow}`}
+          onClick={() => {
+            const tomorrow = moment().add(1, "day");
+            setDateContext(tomorrow);
+            setSelectedDate(tomorrow);
+          }}
+        >
           Tomorrow
         </button>
       </div>
