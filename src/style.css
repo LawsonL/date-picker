@@ -1,0 +1,47 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 1rem;
+  font-family: system-ui, sans-serif;
+  color: black;
+  background-color: white;
+}
+
+h1 {
+  font-weight: 800;
+  font-size: 1.5rem;
+}
+
+.styled-date-picker {
+  position: relative;
+  font-family: Arial, sans-serif;
+}
+
+.styled-date-picker .date-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Custom styles to match the design */
+/* Note: the appearance of the input may vary by browser */
+/* and some parts cannot be styled (like the calendar dropdown) */
+
+.styled-date-picker .date-input::-webkit-calendar-picker-indicator {
+  color: rgba(0, 0, 0, 0);
+  background: none;
+  z-index: 1;
+}
+
+.styled-date-picker .date-input:focus {
+  outline: none;
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.5);
+}
+
+/* Additional custom styles can go here */
