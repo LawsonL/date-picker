@@ -1,21 +1,85 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./style.css";
 import styles from "./Calendar.module.scss";
 import moment from "moment";
 
 export default function App() {
+  const defaultDate = null;
+  const defaultDateMoment = defaultDate ? moment(defaultDate) : null;
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [dateInput, setDateInput] = useState(
+    defaultDateMoment?.format("DD/MM/YYYY") ?? ""
+  );
+  const [selectedDate, setSelectedDate] = useState(defaultDateMoment); // Date object to pass to Calendar
+  const inputRef = useRef(null); // Ref for the input
+
+  const calendarRef = useRef(null); // Ref for the calendar
+
+  useEffect(() => {
+    // Function to detect click outside
+    function handleClickOutside(event) {
+      if (
+        inputRef.current &&
+        !inputRef.current.contains(event.target) &&
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target)
+      ) {
+        setShowCalendar(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleInputChange = (e) => {
+    setDateInput(e.target.value);
+    const parsedDate = moment(e.target.value, "DD/MM/YYYY", true);
+    if (parsedDate.isValid()) {
+      setSelectedDate(parsedDate.toDate());
+    }
+  };
+
+  const handleCalendarChange = (date) => {
+    // Format the selected date and update input
+    setDateInput(moment(date).format("DD/MM/YYYY"));
+    setSelectedDate(date);
+    setShowCalendar(false);
+  };
   return (
-    <div>
-      <h1>Date picker!</h1>
-      <Calendar date={new Date()} />
+    <div className="App">
+      <h1>Single Date Select</h1>
+      <div className="date-picker-container">
+        <input
+          ref={inputRef}
+          type="text"
+          value={dateInput}
+          onChange={handleInputChange}
+          placeholder="DD/MM/YYYY"
+          onFocus={() => setShowCalendar(true)} // Show calendar when the input is focused
+        />
+        <button onClick={() => setShowCalendar(!showCalendar)}>
+          {/* Insert your calendar icon here */}
+        </button>
+        {showCalendar && (
+          <div ref={calendarRef} style={{ width: "fit-content" }}>
+            <Calendar date={selectedDate} onSelect={handleCalendarChange} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-const Calendar = ({ date }) => {
-  const [selectedDate, setSelectedDate] = useState(null); // New state for the selected date
+const Calendar = ({ date, onSelect }) => {
+  const [selectedDate, setSelectedDate] = useState(date ? moment(date) : null); // New state for the selected date
 
-  const [dateContext, setDateContext] = useState(moment(date));
+  const [dateContext, setDateContext] = useState(
+    date ? moment(date) : moment()
+  );
   const month = dateContext.month();
   const year = dateContext.year();
 
@@ -27,6 +91,7 @@ const Calendar = ({ date }) => {
 
   const onDateClick = (day) => {
     setSelectedDate(moment(dateContext).date(day)); // Set the selected date
+    onSelect(moment(dateContext).date(day));
   };
 
   let lastMonthDays = [];
@@ -165,6 +230,7 @@ const Calendar = ({ date }) => {
             const today = moment();
             setDateContext(today);
             setSelectedDate(today);
+            onSelect(today);
           }}
         >
           Today
@@ -175,6 +241,7 @@ const Calendar = ({ date }) => {
             const tomorrow = moment().add(1, "day");
             setDateContext(tomorrow);
             setSelectedDate(tomorrow);
+            onSelect(tomorrow);
           }}
         >
           Tomorrow
